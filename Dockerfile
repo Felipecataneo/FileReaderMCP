@@ -19,10 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Tornar o script executável
-RUN chmod +x main.py
+RUN chmod +x doc_mcp_tool.py
 
 # Expor porta (embora MCP use stdio, pode ser útil para logs)
 EXPOSE 8000
 
 # Comando para executar o servidor
-CMD ["python", "main.py"]
+CMD ["python", "doc_mcp_tool.py"]
