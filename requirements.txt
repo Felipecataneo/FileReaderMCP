@@ -1,0 +1,20 @@
+# Dependências principais do MCP
+mcp
+
+# Leitura de PDFs
+PyPDF2
+pdfplumber
+
+# Leitura de documentos Word
+python-docx
+
+# Processamento de dados
+pandas
+openpyxl
+
+# Parsing HTML/XML
+beautifulsoup4
+lxml
+
+# Utilitários
+pathlib2
