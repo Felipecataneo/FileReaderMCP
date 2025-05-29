@@ -214,21 +214,10 @@ class FileReader:
             logger.info(f"Baixando arquivo de: {url}")
             start_time = time.time()
 
-            # ... (restante do código de SSL context, filename, suffix) ...
-             # Extrai nome do arquivo da URL
+            # Extrai nome do arquivo da URL
             parsed_url = urlparse(url)
             filename = os.path.basename(parsed_url.path) or "downloaded_file"
-            # Guess suffix from filename or MIME type if available
-            # Ensure mimetypes.guess_type result is handled for potential None[0]
-            mime_type_tuple = mimetypes.guess_type(url)
-            mime_type_guess = mime_type_tuple[0] if mime_type_tuple else None # Safely get mime type string
-            guessed_suffix_from_mime = mimetypes.guess_extension(mime_type_guess) if mime_type_guess else None # Safely get extension
-            suffix = Path(filename).suffix or guessed_suffix_from_mime or '.tmp'
-            # Add .html/.htm suffix if mime_type_guess looks like html, as a hint for OS mimetypes later IF Content-Type is not used
-            # But using Content-Type directly is better. Let's remove this complex suffix logic and rely on Content-Type.
-            # Keep it simple: suffix from path or just .tmp
             suffix = Path(filename).suffix or '.tmp'
-
 
             # Create temporary file first to get the path
             temp_file_obj = tempfile.NamedTemporaryFile(delete=False, suffix=suffix) # Keep simple suffix logic
@@ -238,6 +227,7 @@ class FileReader:
             if HAS_REQUESTS:
                 logger.debug("Usando 'requests' para download.")
                 try:
+                    # Note: verify=False disables SSL certificate verification - Use with caution!
                     response = requests.get(url, timeout=self.timeout, stream=True, verify=False)
                     response.raise_for_status()
 
@@ -270,6 +260,15 @@ class FileReader:
                 try:
                     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
                     req = urllib.request.Request(url, headers=headers)
+
+                    # --- ADICIONE ESTE BLOCO ---
+                    # Cria um contexto SSL. Similar ao verify=False do requests,
+                    # desabilita a verificação do certificado SSL. Use com cautela!
+                    ssl_context = ssl.create_default_context()
+                    ssl_context.check_hostname = False
+                    ssl_context.verify_mode = ssl.CERT_NONE
+                    logger.debug("Created SSL context with verification disabled for urllib.")
+                    # --- FIM DO BLOCO ---
 
                     with urllib.request.urlopen(req, timeout=self.timeout, context=ssl_context) as response:
                         content_type = response.headers.get('Content-Type') # <- Capture Content-Type (might be capitalized in urllib headers)
